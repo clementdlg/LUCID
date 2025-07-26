@@ -82,6 +82,23 @@ get_next_arg() {
 	done
 }
 
+get_config() {
+	# get config
+	if ! is_in_array "--config" "${_ARGS[@]}"; then
+		log e "You must provide a config using --config"
+		exit 1
+	fi
+
+	_CONFIG_FILE="$(get_next_arg "--config")"
+
+	if ! [[ -f "$_CONFIG_FILE" ]]; then 
+		log e "Not a config file : '$_CONFIG_FILE'"
+		exit 1
+	fi
+
+	log i "Found config file '$_CONFIG_FILE'"
+}
+
 check_config_syntax() {
 	local current_line=""
 	local line_nr=0
@@ -175,20 +192,7 @@ main() {
 		exit 0
 	fi
 
-	# get config
-	if ! is_in_array "--config" "${_ARGS[@]}"; then
-		log e "You must provide a config using --config"
-		exit 1
-	fi
-
-	_CONFIG_FILE="$(get_next_arg "--config")"
-
-	if ! [[ -f "$_CONFIG_FILE" ]]; then 
-		log e "Not a config file : '$_CONFIG_FILE'"
-		exit 1
-	fi
-
-	log i "Found config file '$_CONFIG_FILE'"
+	get_config
 
 	check_config_syntax
 	
@@ -196,56 +200,45 @@ main() {
 		exit 0
 	fi
 
-	while IFS= read -r current_line; do
-		line_nr=$(( line_nr + 1 ))
-		local trimmed_line="$( echo "$current_line" | xargs)"
-		local current_array=()
-
-		# skip comments and blank lines
-		if [[ "$trimmed_line" =~ ^# || -z "$trimmed_line" ]]; then
-			continue;
-		fi
-
-		local trimmed_key="$(echo "$trimmed_line" | cut -d= -f1 | xargs)"
-		local trimmed_value="$(echo "$trimmed_line" | cut -d= -f2 | xargs)"
-
-		readarray -t current_array < <( printf "%s" "$trimmed_value" | tr ":" "\n")
-
-		case "$trimmed_key" in
-			dotfiles_*)
-				log d "dotfiles"
-				dotfiles_handler "${current_array[@]}";;
-			pacman_*)
-				log d "pacman"
-				pacman_handler "${current_array[@]}";;
-			aur_*)
-				log d "aur"
-				aur_handler "${current_array[@]}";;
-			flatpak_*)
-				log d "flatpak"
-				flatpak_handler "${current_array[@]}";;
-			pipx_*)
-				log d "pipx"
-				pipx_handler "${current_array[@]}";;
-			repos_*)
-				log d "repos"
-				repos_handler "${current_array[@]}";;
-			systemd_*)
-				log d "systemd"
-				systemd_handler "${current_array[@]}";;
-			fw_*)
-				log d "fw"
-				fw_handler "${current_array[@]}";;
-			user_*)
-				log d "user"
-				user_handler "${current_array[@]}";;
-			libvirt_*)
-				log d "libvirt"
-				libvirt_handler "${current_array[@]}";;
-		esac
+	# dotfiles_handler "${current_array[@]}";;
+	#
+	# pacman_handler "${current_array[@]}";;
+	#
+	# aur_handler "${current_array[@]}";;
+	#
+	# flatpak_handler "${current_array[@]}";;
+	#
+	# pipx_handler "${current_array[@]}";;
+	#
+	# repos_handler "${current_array[@]}";;
+	#
+	# systemd_handler "${current_array[@]}";;
+	#
+	# fw_handler "${current_array[@]}";;
+	#
+	# user_handler "${current_array[@]}";;
+	#
+	# libvirt_handler "${current_array[@]}";;
 
 
-	done < "$_CONFIG_FILE"
 }
 
 main
+
+
+# while IFS= read -r current_line; do
+# 	line_nr=$(( line_nr + 1 ))
+# 	local trimmed_line="$( echo "$current_line" | xargs)"
+# 	local current_array=()
+#
+# 	# skip comments and blank lines
+# 	if [[ "$trimmed_line" =~ ^# || -z "$trimmed_line" ]]; then
+# 		continue;
+# 	fi
+#
+# 	local trimmed_key="$(echo "$trimmed_line" | cut -d= -f1 | xargs)"
+# 	local trimmed_value="$(echo "$trimmed_line" | cut -d= -f2 | xargs)"
+#
+# 	readarray -t current_array < <( printf "%s" "$trimmed_value" | tr ":" "\n")
+#
+# done < "$_CONFIG_FILE"
