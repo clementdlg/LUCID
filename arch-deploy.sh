@@ -22,15 +22,15 @@ file_exists "$modules_src" && . "$modules_src"
 readonly _PREFIXES=(
 	"pkg"
 	"fw"
-	"dots"
+	"dotfiles"
 	"flatpak"
 )
 
-declare -A _CONFIG
+declare -A _CONFIG # config as array
+_CONFIG_FILE=""
 
 main() {
-	local current_line=""
-	local line_nr=0
+	declare -A buffer
 
 	# show help
 	if (( ${#_ARGS[@]} == 0 )) || is_in_array "--help" "${_ARGS[@]}" ; then
@@ -46,7 +46,10 @@ main() {
 		exit 0
 	fi
 
-	echo "config keys = ${!config[@]}"
+	echo "config keys = ${!_CONFIG[@]}" # debug
+	printf "\n\n" # debug
+
+	# set -x
 
 	# execute all modules
 	for prefix in "${_PREFIXES[@]}"; do
@@ -55,13 +58,9 @@ main() {
 
 		if declare -F "${prefix}_module" >/dev/null; then
 			${prefix}_module buffer
+			printf "\n\n" # debug
 		fi
 	done
-	
-
 }
 
 main
-
-# 	readarray -t current_array < <( printf "%s" "$trimmed_value" | tr ":" "\n")
-

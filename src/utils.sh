@@ -112,7 +112,7 @@ check_config_syntax() {
 		# check format
 		if ! [[ "$trimmed_line" =~ ^[a-z][a-z_]+\ *=.*$ ]]; then
 			log e "Config l${line_nr}: Invalid key/value pair"
-			exit 1
+			return 1
 		fi
 
 		local trimmed_key="$(echo "$trimmed_line" | cut -d= -f1 | xargs)"
@@ -131,6 +131,8 @@ check_config_syntax() {
 			has_warning=1
 		fi
 
+		_CONFIG["$trimmed_key"]="$trimmed_value"
+
 	done < "$_CONFIG_FILE"
 
 	(( has_warning == 00 )) && log i "Config is valid"
@@ -145,10 +147,10 @@ set_buffer() {
 	done
 
 	# keys that match the prefix are sent to the buffer 
-	for key in "${!config[@]}"; do
+	for key in "${!_CONFIG[@]}"; do
 		if [[ "$key" == "$prefix"* ]]; then
-			buffer["$key"]="${config["$key"]}"
-			unset "config[$key]"
+			buffer["$key"]="${_CONFIG["$key"]}"
+			unset "_CONFIG[$key]"
 		fi
 	done
 }

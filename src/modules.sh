@@ -4,9 +4,9 @@ fw_module() {
 
 }
 
-dots_module() {
+dotfiles_module() {
 	local -n config="$1"
-	echo "dots_module config keys  = ${!config[@]}"
+	echo "dotfiles_module config keys  = ${!config[@]}"
 
 }
 
