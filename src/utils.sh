@@ -155,3 +155,26 @@ set_buffer() {
 	done
 }
 
+
+check_required_keys() {
+	local -n keys_to_check="$1"
+	local -n mod_config="$2"
+
+	for item in "${keys_to_check[@]}"; do
+		if ! [[ -v mod_config["$item"] ]]; then
+			log e "Missing key '$item' from config file"
+			return 1
+		fi
+	done
+	
+	log i "Required keys are present"
+}
+
+is_installed() {
+	local pkg="$1"
+
+	if ! which "$pkg" &>/dev/null; then
+		echo "error : $pkg is not installed"
+		return 1
+	fi
+}

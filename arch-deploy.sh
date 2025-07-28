@@ -20,10 +20,16 @@ file_exists "$modules_src" && . "$modules_src"
 
 # defines the order of execution of the modules
 readonly _PREFIXES=(
-	"pkg"
-	"fw"
+	# "disk"
+	# "user"
 	"dotfiles"
-	"flatpak"
+	# "pkg"
+	# "pipx"
+	# "flatpak"
+	# "systemd"
+	# "libvirt"
+	# "fw"
+	# "repos"
 )
 
 declare -A _CONFIG # config as array
@@ -47,7 +53,7 @@ main() {
 	fi
 
 	echo "config keys = ${!_CONFIG[@]}" # debug
-	printf "\n\n" # debug
+	printf "\n" # debug
 
 	# set -x
 
@@ -58,7 +64,7 @@ main() {
 
 		if declare -F "${prefix}_module" >/dev/null; then
 			${prefix}_module buffer
-			printf "\n\n" # debug
+			printf "\n" # debug
 		fi
 	done
 }
