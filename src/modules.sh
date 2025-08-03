@@ -29,17 +29,18 @@ dotfiles_module() {
 
 	url="https://github.com/${url}.git"
 
+	# fallback : git branch
 	if [[ -z "$branch" ]]; then
 		branch="main"	
 	fi
 
 	is_installed git
 
-	if [[ -f "$target" ]]; then
+	if [[ -d "$target" ]]; then
 		mv "$target" "$target.old.$timestamp"
 	fi
 
-	# git clone --branch="$branch" "$url" "$target"
+	git clone --branch="$branch" "$url" "$target"
 	echo "branch = $branch ; url = $url"
 }
 

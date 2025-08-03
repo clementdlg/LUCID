@@ -174,7 +174,7 @@ is_installed() {
 	local pkg="$1"
 
 	if ! which "$pkg" &>/dev/null; then
-		echo "error : $pkg is not installed"
+		echo "Dependency error : $pkg is not installed"
 		return 1
 	fi
 }
