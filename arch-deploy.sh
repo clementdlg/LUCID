@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+readonly PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 

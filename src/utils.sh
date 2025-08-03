@@ -59,7 +59,8 @@ silent() {
 }
 
 rootless() {
-	sudo -u $user "$@"
+	log d "executing rootless command as $SUDO_USER"
+	sudo -u "$SUDO_USER" "$@"
 }
 
 check_privileges() {

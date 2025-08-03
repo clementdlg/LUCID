@@ -19,7 +19,7 @@ dotfiles_module() {
 
 	branch="${config["dotfiles_branch"]}"
 	url="${config["dotfiles_repo"]}"
-	target="$HOME/.config"
+	target="/home/$SUDO_USER/.config"
 	timestamp="$(date +%y-%m-%d-%H-%M-%S)"
 
 	if [[ -z "$url" ]]; then
