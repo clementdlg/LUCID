@@ -22,7 +22,7 @@ file_exists "$modules_src" && . "$modules_src"
 readonly _PREFIXES=(
 	# "disk"
 	# "user"
-	# "pkg"
+	"pkg"
 	"dotfiles"
 	# "pipx"
 	# "flatpak"
@@ -37,6 +37,8 @@ _CONFIG_FILE=""
 
 main() {
 	declare -A buffer
+
+	check_privileges
 
 	# show help
 	if (( ${#_ARGS[@]} == 0 )) || is_in_array "--help" "${_ARGS[@]}" ; then

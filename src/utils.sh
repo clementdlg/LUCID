@@ -54,6 +54,21 @@ AUTHOR
 EOF
 }
 
+silent() {
+	"$@" &>/dev/null
+}
+
+rootless() {
+	sudo -u $user "$@"
+}
+
+check_privileges() {
+	if [[ $EUID -ne 0 ]]; then
+		log e "Run this script using sudo"
+		return 1
+	fi
+}
+
 is_in_array() {
 	query="$1"
 	shift

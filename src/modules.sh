@@ -37,16 +37,27 @@ dotfiles_module() {
 	is_installed git
 
 	if [[ -d "$target" ]]; then
-		mv "$target" "$target.old.$timestamp"
+		rootless mv "$target" "$target.old.$timestamp"
 	fi
 
-	git clone --branch="$branch" "$url" "$target"
-	echo "branch = $branch ; url = $url"
+	silent rootless git clone --branch="$branch" "$url" "$target"
+
+	log i "Cloned branch $branch of $url into $target"
 }
 
 pkg_module() {
 	local -n config="$1"
 	echo "pkg_module config keys  = ${!config[@]}"
+
+
+	for pkg_group in "${!config[@]}"; do
+		local pkg_names="$(echo "${config["$pkg_group"]}" | tr ":" " ")"
+		log i "Installing package group ${pkg_group/pkg_/}"
+		log d "installing '$pkg_names'"
+
+		do_weak_deps="True"
+		dnf install -y --setopt=install_weak_deps=${do_weak_deps} $pkg_names
+	done
 }
 
 flatpak_module() {
