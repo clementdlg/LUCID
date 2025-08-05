@@ -60,7 +60,7 @@ silent() {
 
 rootless() {
 	log d "executing rootless command as $SUDO_USER"
-	sudo -u "$SUDO_USER" "$@"
+	sudo -u "$SUDO_USER" "$@" # TODO:: replace sudo_user by my own sanitized user variable
 }
 
 check_privileges() {
@@ -182,8 +182,6 @@ check_required_keys() {
 			return 1
 		fi
 	done
-	
-	log i "Required keys are present"
 }
 
 is_installed() {

@@ -22,15 +22,16 @@ file_exists "$modules_src" && . "$modules_src"
 # defines the order of execution of the modules
 readonly _PREFIXES=(
 	# "disk"
-	# "user"
-	"pkg"
-	"dotfiles"
+	"user"
+	# "pkg"
+	# "dotfiles"
 	# "pipx"
 	# "flatpak"
 	# "systemd"
 	# "libvirt"
 	# "fw"
 	# "repos"
+	"groups"
 )
 
 declare -A _CONFIG # config as array
@@ -54,11 +55,6 @@ main() {
 	if is_in_array "--check" "${_ARGS[@]}" || is_in_array "-c" "${_ARGS[@]}"; then
 		exit 0
 	fi
-
-	echo "config keys = ${!_CONFIG[@]}" # debug
-	printf "\n" # debug
-
-	# set -x
 
 	# execute all modules
 	for prefix in "${_PREFIXES[@]}"; do
