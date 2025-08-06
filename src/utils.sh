@@ -60,7 +60,7 @@ silent() {
 
 rootless() {
 	log d "executing rootless command as $SUDO_USER"
-	sudo -u "$SUDO_USER" "$@" # TODO:: replace sudo_user by my own sanitized user variable
+	sudo -u "$_LOGIN" "$@"
 }
 
 check_privileges() {

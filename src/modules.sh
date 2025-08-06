@@ -1,12 +1,16 @@
-# Description : create user if needed and add it to specified groups
+# Description : Ensure user exists. Creates it if necessary.
+# 				Ensure home dir exists, creates one if not.
 user_module() {
 	local -n config="$1"
-	echo "${FUNCNAME} config keys  = ${!config[@]}"
-	
 	local required_keys=("user_login")
 
 	check_required_keys required_keys config
 	_LOGIN="${config["user_login"]}"
+
+	if [[ ! "$_LOGIN" =~ ^[a-z_][a-z0-9_-]*$ || "$_LOGIN" == "root" ]]; then
+		log e "Invalid username '$_LOGIN'"
+		return 1
+	fi
 
 	# user creation with/out uid
 	if ! silent getent passwd "$_LOGIN"; then
@@ -31,15 +35,26 @@ user_module() {
 		set +x
 	else
 		log i "Found user '$_LOGIN'. Not creating a user"
+
+		# ensure home is created
+		local home="/home/$_LOGIN"
+		if [[ ! -f "$home" ]]; then
+			mkdir -p "$home"
+			cp -a /etc/skel/. "$home"
+			chown -R "$_LOGIN:" "$home"
+			chmod 755 "$home"
+
+			log i "Created and populated $home"
+		fi
+
 	fi
 
 }
 
+# Description : Add user to groups if needed. Does not create any groups. Must run at the end of the script to ensure service groups are created by their respective packages
 groups_module() {
 	local -n config="$1"
-	echo "${FUNCNAME} config keys  = ${!config[@]}"
 
-	# add groups
 	if [[ ! -v config["groups"] || -z "${config["groups"]}" ]]; then
 		return
 	fi
@@ -69,8 +84,6 @@ groups_module() {
 # 				old ~/.config is moved to ~/.config.old.<timestamp>
 dotfiles_module() {
 	local -n config="$1"
-	echo "${FUNCNAME} config keys  = ${!config[@]}" # debug
-
 	local required_keys=(
 		"dotfiles_branch"
 		"dotfiles_repo"
@@ -80,15 +93,13 @@ dotfiles_module() {
 
 	branch="${config["dotfiles_branch"]}"
 	url="${config["dotfiles_repo"]}"
-	target="/home/$SUDO_USER/.config" # TODO:: replace sudo_user by my own sanitized user variable
+	target="/home/$_LOGIN/.config"
 	timestamp="$(date +%y-%m-%d-%H-%M-%S)"
 
 	if [[ -z "$url" ]]; then
 		log e "${required_keys[1]} cannot be empty"
 		return 1
 	fi
-
-	url="https://github.com/${url}.git"
 
 	# fallback : git branch
 	if [[ -z "$branch" ]]; then
@@ -97,27 +108,74 @@ dotfiles_module() {
 
 	is_installed git
 
+	set -x
+
+	# idempotency check
 	if [[ -d "$target" ]]; then
-		rootless mv "$target" "$target.old.$timestamp"
+		if [[ "$(git -C "$target" remote get-url origin)" == "$url" && "$(git -C "$target" branch --show-current)" == "$branch" ]]; then
+			log i "Dotfiles repo already cloned. Skipping"
+		else
+			log i "Directory at /home/$_LOGIN/.config already exist. Doing a backup"
+			rootless mv "$target" "$target.old.$timestamp"
+		fi
 	fi
 
 	silent rootless git clone --branch="$branch" "$url" "$target"
 
+	set +x
 	log i "Cloned branch $branch of $url into $target"
 }
 
 pkg_module() {
 	local -n config="$1"
-	echo "${FUNCNAME} config keys  = ${!config[@]}"
+	local pkg_manager
 
+	declare -A install_cmd
+	install_cmd["dnf"]="install"
+	install_cmd["apt"]="install"
+	install_cmd["pacman"]="-S"
+
+	declare -A confirm
+	confirm["dnf"]="-y"
+	confirm["apt"]="-y"
+	confirm["pacman"]="--noconfirm"
+
+	declare -A no_weak_deps
+	no_weak_deps["dnf"]="--setopt=install_weak_deps=False"
+	no_weak_deps["apt"]="--no-install-recommends"
+	no_weak_deps["pacman"]=
+
+	if silent command -v apt; then
+		pkg_manager="apt"
+	elif silent command -v dnf; then
+		pkg_manager="dnf"
+	elif silent command -v pacman; then
+		pkg_manager="pacman"
+	else
+		log e "Unsupported package manager."
+	fi
+
+	readonly pkg_install=("$pkg_manager"
+		"${install_cmd["$pkg_manager"]}"
+		"${confirm["$pkg_manager"]}"
+		"${no_weak_deps["$pkg_manager"]}"
+	)
+
+	script_deps=(
+		"git"
+		"which"
+	)
+
+	log d "pkg_manager = $pkg_manager"
+	log i "Installing script dependencies"
+
+	eval "${pkg_install[@]}" "${script_deps[@]}"
 
 	for pkg_group in "${!config[@]}"; do
 		local pkg_names="$(echo "${config["$pkg_group"]}" | tr ":" " ")"
 		log i "Installing package group ${pkg_group/pkg_/}"
-		log d "installing '$pkg_names'"
 
-		do_weak_deps="True"
-		dnf install -y --setopt=install_weak_deps=${do_weak_deps} $pkg_names
+		eval "${pkg_install[@]}" "$pkg_names"
 	done
 }
 
