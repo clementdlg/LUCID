@@ -33,17 +33,20 @@ user_module() {
 		set -x
 		useradd ${useradd_args[@]} "$_LOGIN"
 		set +x
+		log i "User $_LOGIN created"
 	else
-		log i "Found user '$_LOGIN'. Not creating a user"
+		log i "Found user '$_LOGIN'. Skipping user creation"
 
 		# ensure home is created
 		local home="/home/$_LOGIN"
-		if [[ ! -f "$home" ]]; then
+		if [[ ! -d "$home" ]]; then
+			set -x 
 			mkdir -p "$home"
 			cp -a /etc/skel/. "$home"
 			chown -R "$_LOGIN:" "$home"
 			chmod 755 "$home"
 
+			set +x 
 			log i "Created and populated $home"
 		fi
 
@@ -128,54 +131,32 @@ dotfiles_module() {
 
 pkg_module() {
 	local -n config="$1"
-	local pkg_manager
-
-	declare -A install_cmd
-	install_cmd["dnf"]="install"
-	install_cmd["apt"]="install"
-	install_cmd["pacman"]="-S"
-
-	declare -A confirm
-	confirm["dnf"]="-y"
-	confirm["apt"]="-y"
-	confirm["pacman"]="--noconfirm"
-
-	declare -A no_weak_deps
-	no_weak_deps["dnf"]="--setopt=install_weak_deps=False"
-	no_weak_deps["apt"]="--no-install-recommends"
-	no_weak_deps["pacman"]=
 
 	if silent command -v apt; then
-		pkg_manager="apt"
+		pkg_install="apt install -y --no-install-recommends"
 	elif silent command -v dnf; then
-		pkg_manager="dnf"
+		pkg_install="dnf install -y --setopt=install_weak_deps=False"
 	elif silent command -v pacman; then
-		pkg_manager="pacman"
+		pkg_install="pacman -S --noconfirm"
 	else
 		log e "Unsupported package manager."
 	fi
-
-	readonly pkg_install=("$pkg_manager"
-		"${install_cmd["$pkg_manager"]}"
-		"${confirm["$pkg_manager"]}"
-		"${no_weak_deps["$pkg_manager"]}"
-	)
 
 	script_deps=(
 		"git"
 		"which"
 	)
 
-	log d "pkg_manager = $pkg_manager"
+	log d "pkg_install = $pkg_install"
 	log i "Installing script dependencies"
 
-	eval "${pkg_install[@]}" "${script_deps[@]}"
+	$pkg_install "${script_deps[@]}"
 
 	for pkg_group in "${!config[@]}"; do
 		local pkg_names="$(echo "${config["$pkg_group"]}" | tr ":" " ")"
 		log i "Installing package group ${pkg_group/pkg_/}"
 
-		eval "${pkg_install[@]}" "$pkg_names"
+		$pkg_install $pkg_names
 	done
 }
 
@@ -213,4 +194,3 @@ fw_module() {
 	local -n config="$1"
 	echo "${FUNCNAME} config keys  = ${!config[@]}"
 }
-

@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -14,10 +14,13 @@ file_exists() {
 }
 
 # includes
-utils_src="$_SCRIPT_DIR/src/utils.sh"
-modules_src="$_SCRIPT_DIR/src/modules.sh"
-file_exists "$utils_src" && . "$utils_src"
-file_exists "$modules_src" && . "$modules_src"
+includes_list=("src/utils.sh"
+	"src/modules.sh"
+)
+
+for include in "${includes_list[@]}"; do
+	file_exists "$_SCRIPT_DIR/$include" && . "$_SCRIPT_DIR/$include"
+done
 
 # defines the order of execution of the modules
 readonly _PREFIXES=(
