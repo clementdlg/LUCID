@@ -187,7 +187,7 @@ check_required_keys() {
 is_installed() {
 	local pkg="$1"
 
-	if ! which "$pkg" &>/dev/null; then
+	if ! silent command -v "$pkg"; then
 		echo "Dependency error : $pkg is not installed"
 		return 1
 	fi
