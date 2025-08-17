@@ -34,7 +34,12 @@ readonly _PREFIXES=(
 
 for prefix in "${_PREFIXES[@]}"; do
 	mod_file="${_SCRIPT_DIR}/src/modules/${prefix}.sh"
-	file_exists "$mod_file" && source "${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+	if [[ -f "$mod_file" ]]; then
+		source "${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+	else
+		log e "Source file does not exist : $mod_file"
+		exit 1
+	fi
 done
 
 declare -A _CONFIG # config as array
@@ -68,7 +73,7 @@ main() {
 			${prefix}_module buffer
 		else
 			log e "Missing module ${prefix}_module in source files"
-			return 1
+			exit 1
 		fi
 	done
 }
