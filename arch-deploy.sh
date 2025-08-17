@@ -6,21 +6,16 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+# TODO :Move into utils
 file_exists() {
 	file="$1"
 	if [[ ! -f "$file" ]]; then
 		log e "'$file' does not exist"
+		return 1
 	fi
 }
 
-# includes
-includes_list=("src/utils.sh"
-	"src/modules.sh"
-)
-
-for include in "${includes_list[@]}"; do
-	file_exists "$_SCRIPT_DIR/$include" && . "$_SCRIPT_DIR/$include"
-done
+source "$_SCRIPT_DIR/src/utils.sh"
 
 # defines the order of execution of the modules
 readonly _PREFIXES=(
@@ -36,6 +31,11 @@ readonly _PREFIXES=(
 	# "repos"
 	"groups"
 )
+
+for prefix in "${_PREFIXES[@]}"; do
+	mod_file="${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+	file_exists "$mod_file" && source "${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+done
 
 declare -A _CONFIG # config as array
 _CONFIG_FILE=""
@@ -66,7 +66,9 @@ main() {
 
 		if declare -F "${prefix}_module" >/dev/null; then
 			${prefix}_module buffer
-			printf "\n" # debug
+		else
+			log e "Missing module ${prefix}_module in source files"
+			return 1
 		fi
 	done
 }
