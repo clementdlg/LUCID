@@ -16,7 +16,7 @@ groups_module() {
 	local groups_changed=0
 
 	for grp in $groups_str; do
-		if ! getent group "$grp"; then
+		if ! silent getent group "$grp"; then
 			log w "Not adding $_LOGIN to group $grp because $grp does not exist"
 			continue
 		fi
