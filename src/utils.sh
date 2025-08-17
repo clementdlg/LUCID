@@ -59,7 +59,6 @@ silent() {
 }
 
 rootless() {
-	log d "executing rootless command as $SUDO_USER"
 	sudo -u "$_LOGIN" "$@"
 }
 

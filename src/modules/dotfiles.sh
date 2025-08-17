@@ -12,7 +12,7 @@ dotfiles_module() {
 
 	check_required_keys required_keys config
 
-	command -v git || pkg_installer "git"
+	silent command -v git || pkg_installer "git"
 
 	local branch="${config["dotfiles_branch"]}"
 	local fallback_branch="main"
@@ -28,8 +28,6 @@ dotfiles_module() {
 	if [[ -z "$branch" ]]; then
 		branch="$fallback_branch"	
 	fi
-
-	is_installed git
 
 	#### IDEMPOTENCY CHECKS ####
 
@@ -73,7 +71,7 @@ check_repo_already_cloned() {
 		return 1
 	fi
 
-	if [[ "$(git -C "$target" remote get-url origin)" == "$url" && "$(git -C "$target" branch --show-current)" == "$branch" ]]; then
+	if [[ "$(rootless git -C "$target" remote get-url origin)" == "$url" && "$(rootless git -C "$target" branch --show-current)" == "$branch" ]]; then
 		return 0
 	else
 		return 1

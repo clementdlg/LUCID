@@ -14,40 +14,69 @@ user_module() {
 		return 1
 	fi
 
-	# user creation with/out uid
+	# ensure user exists
 	if ! silent getent passwd "$_LOGIN"; then
-		local uid=""
-		local useradd_args=(
-			"--create-home"
-			"--user-group"
-		)
+		local uid="-1"
 
-		if [[ -v config["user_id"] && -n "${config["user_id"]}" ]]; then
+		if [[ -v "config[user_id]" \
+			&& -n "${config["user_id"]}" ]]; then
 			uid="${config["user_id"]}"
-			if silent getent passwd "$uid"; then
-				log e "Invalid UID $uid. Already in use."
-				return 1
-			fi
-
-			useradd_args+=("--uid $uid")
 		fi
 
-		useradd ${useradd_args[@]} "$_LOGIN"
-		log i "User $_LOGIN created"
-	else
-		log i "Found user '$_LOGIN'. Skipping user creation"
-
-		# ensure home is created
-		local home="/home/$_LOGIN"
-		if [[ ! -d "$home" ]]; then
-			mkdir -p "$home"
-			cp -a /etc/skel/. "$home"
-			chown -R "$_LOGIN:" "$home"
-			chmod 755 "$home"
-
-			log i "Created and populated $home"
-		fi
-
+		create_user "$_LOGIN" "$uid"
 	fi
 
+	# ensure home is created
+	if [[ ! -d "/home/$_LOGIN" ]]; then
+		create_home_manually "$_LOGIN"
+	fi
+}
+
+create_user() {
+	if [[ -z "$1" ]]; then
+		log e "${FUNCNAME} Missing param #1 username"
+		return 1
+	fi
+
+	if [[ -z "$1" ]]; then
+		log e "${FUNCNAME} Missing param #2 uid"
+		return 1
+	fi
+
+	local username="$1"
+	local uid="$2"
+
+	local useradd_args=(
+		"--create-home"
+		"--user-group"
+	)
+
+	if [[ "$uid" != "-1" ]]; then
+		if silent getent passwd "$uid"; then
+			log e "Invalid UID $uid. Already in use."
+			return 1
+		fi
+
+		useradd_args+=("--uid $uid")
+	fi
+
+	useradd ${useradd_args[@]} "$username"
+	log i "Created user '$username'. "
+}
+
+create_home_manually() {
+	if [[ -z "$1" ]]; then
+		log e "${FUNCNAME} Missing param #1 username"
+		return 1
+	fi
+
+	local username="$1"
+	local home="/home/$_LOGIN"
+
+	mkdir -p "$home"
+	cp -a /etc/skel/. "$home"
+	chown -R "$username:" "$home"
+	chmod 755 "$home"
+
+	log i "Created and populated $home"
 }
