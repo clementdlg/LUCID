@@ -17,7 +17,7 @@ groups_module() {
 
 	for grp in $groups_str; do
 		if ! silent getent group "$grp"; then
-			log w "Not adding $_LOGIN to group $grp because $grp does not exist"
+			log w "Not adding $_LOGIN to group '$grp' because it does not exist"
 			continue
 		fi
 

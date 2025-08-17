@@ -12,6 +12,8 @@ dotfiles_module() {
 
 	check_required_keys required_keys config
 
+	command -v git || pkg_installer "git"
+
 	local branch="${config["dotfiles_branch"]}"
 	local fallback_branch="main"
 	local url="${config["dotfiles_repo"]}"
