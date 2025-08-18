@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -xeuo pipefail
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-
-# TODO :Move into utils
-file_exists() {
-	file="$1"
-	if [[ ! -f "$file" ]]; then
-		log e "'$file' does not exist"
-		return 1
-	fi
-}
 
 source "$_SCRIPT_DIR/src/utils.sh"
 
@@ -32,20 +23,20 @@ readonly _PREFIXES=(
 	"groups"
 )
 
-for prefix in "${_PREFIXES[@]}"; do
-	mod_file="${_SCRIPT_DIR}/src/modules/${prefix}.sh"
-	if [[ -f "$mod_file" ]]; then
-		source "${_SCRIPT_DIR}/src/modules/${prefix}.sh"
-	else
-		log e "Source file does not exist : $mod_file"
-		exit 1
-	fi
-done
-
 declare -A _CONFIG # config as array
 _CONFIG_FILE=""
 
 main() {
+	for prefix in "${_PREFIXES[@]}"; do
+		mod_file="${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+		if [[ -f "$mod_file" ]]; then
+			source "${_SCRIPT_DIR}/src/modules/${prefix}.sh"
+		else
+			log e "Source file does not exist : $mod_file"
+			exit 1
+		fi
+	done
+
 	declare -A buffer
 
 	check_privileges
@@ -66,7 +57,7 @@ main() {
 
 	# execute all modules
 	for prefix in "${_PREFIXES[@]}"; do
-		# buffer stores every that matches the prefix
+		# buffer stores every key that matches the prefix
 		set_buffer "$prefix"
 
 		if declare -F "${prefix}_module" >/dev/null; then

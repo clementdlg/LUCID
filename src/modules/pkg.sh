@@ -2,13 +2,6 @@ pkg_module() {
 	log d "pkg module"
 	local -n config="$1"
 
-	# # TODO :Remove this and implement deps install for each module
-	# script_deps=(
-	# 	"git"
-	# )
-	# log i "Installing script dependencies"
-	# pkg_installer "${script_deps[@]}"
-
 	for pkg_group in "${!config[@]}"; do
 		local pkg_names="$(echo "${config["$pkg_group"]}" | tr ":" " ")"
 
@@ -33,7 +26,7 @@ pkg_installer() {
 	fi
 
 	log i "Installing package(s) : $pkg_names"
-	$_PKG_INSTALL $pkg_names
+	$_PKG_INSTALL $pkg_names 1>&2
 
 }
 

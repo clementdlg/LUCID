@@ -71,7 +71,8 @@ check_repo_already_cloned() {
 		return 1
 	fi
 
-	if [[ "$(rootless git -C "$target" remote get-url origin)" == "$url" && "$(rootless git -C "$target" branch --show-current)" == "$branch" ]]; then
+	if [[ "$(rootless git -C "$target" remote get-url origin)" == "$url" \
+		&& "$(rootless git -C "$target" branch --show-current)" == "$branch" ]]; then
 		return 0
 	else
 		return 1
