@@ -8,8 +8,6 @@ parse_config() {
 	while IFS= read -r line; do
 		line_nr=$(( line_nr + 1 ))
 
-		log d "line : $line" 
-
 		# SANITIZE
 		local trimmed_line="$(echo "$line" | xargs)"
 
@@ -46,7 +44,7 @@ parse_config() {
 
 		# VALIDATE VALUE
 		if [[ -z "$value" ]]; then
-			log w "Config l${line_nr}: Empty key, ignoring"
+			log w "Config l${line_nr}: Empty value for '$key', ignoring"
 			continue
 		fi
 
@@ -76,8 +74,6 @@ index_config_key() {
 		return 1
 	fi
 
-	set -x
-
 	readarray -t key_array < <(echo "$1" | tr "." "\n")
 	# declare -p key_array # debug
 
@@ -94,14 +90,12 @@ index_config_key() {
 
 		local index_to_add="${key_array[i + 1]}"
 
-		if ! [[ -v _CONFIG_INDEX[${subkey}] ]]; then
-			_CONFIG_INDEX[${subkey}]="$index_to_add"
-		elif ! is_in_array "$index_to_add" "${_CONFIG_INDEX[${subkey}]}"; then
-			_CONFIG_INDEX[${subkey}]="${_CONFIG_INDEX[${subkey}]} $index_to_add"
+		if ! [[ -v _CONFIG_INDEX[$subkey] ]]; then
+			_CONFIG_INDEX[$subkey]="$index_to_add"
+		elif ! is_in_array "$index_to_add" "${_CONFIG_INDEX[$subkey]}"; then
+			_CONFIG_INDEX[$subkey]="${_CONFIG_INDEX[$subkey]} $index_to_add"
 		fi
 	done
-	set +x
-
 }
 
 # debug function
