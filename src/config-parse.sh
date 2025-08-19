@@ -74,8 +74,7 @@ index_config_key() {
 		return 1
 	fi
 
-	readarray -t key_array < <(echo "$1" | tr "." "\n")
-	# declare -p key_array # debug
+	read -r -a key_array <<< "$(echo "$1" | tr "." " ")"
 
 	for i in $(seq 0 $(( ${#key_array[@]} - 2 ))); do
 		subkey=""
