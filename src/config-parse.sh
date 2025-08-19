@@ -78,10 +78,14 @@ index_config_key() {
 	set -x
 
 	for i in $(seq 0 $(( ${#key_array} - 2 ))); do
-		new_key=${key_array[0]}
+		new_key=""
 
 		for j in $(seq 0 $i); do
-			new_key="${new_key}.${key_array[j + 1]}"
+			if [[ -z "$new_key" ]]; then
+				new_key="${key_array[j]}"
+			else
+				new_key="${new_key}.${key_array[j]}"
+			fi
 		done
 
 		_CONFIG_INDEX[${new_key}]="${key_array[i + 1]}"
