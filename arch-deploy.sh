@@ -50,7 +50,7 @@ main() {
 
 	get_config
 
-	check_config_syntax
+	parse_config
 	
 	if is_in_array "--check" "${_ARGS[@]}" || is_in_array "-c" "${_ARGS[@]}"; then
 		exit 0

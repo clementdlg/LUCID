@@ -1,5 +1,5 @@
 # config helper
-check_config_syntax() {
+parse_config() {
 	local current_line=""
 	local line_nr=0
 	local has_warning=0

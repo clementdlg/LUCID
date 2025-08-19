@@ -69,16 +69,12 @@ check_privileges() {
 	fi
 }
 
-# arg parsing : will be replaced later
 is_in_array() {
-	query="$1"
+	local query="$1"
 	shift
-	array=("$@")
+	local array=("$@")
 
-	for item in "${array[@]}"; do
-		[[ "$item" == "$query" ]] && return
-	done
-	return 1
+	echo "${array[@]}" | grep -qw "$query"
 }
 
 # arg parsing : will be replaced later
@@ -111,13 +107,3 @@ get_config() {
 	log i "Found config file '$_CONFIG_FILE'"
 }
 
-
-# deprecated
-is_installed() {
-	local pkg="$1"
-
-	if ! silent command -v "$pkg"; then
-		echo "Dependency error : $pkg is not installed"
-		return 1
-	fi
-}
