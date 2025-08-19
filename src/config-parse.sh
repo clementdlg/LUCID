@@ -8,6 +8,8 @@ parse_config() {
 	while IFS= read -r line; do
 		line_nr=$(( line_nr + 1 ))
 
+		log d "line : $line" 
+
 		# SANITIZE
 		local trimmed_line="$(echo "$line" | xargs)"
 
@@ -74,25 +76,41 @@ index_config_key() {
 		return 1
 	fi
 
-	key_array=($(echo "$1" | tr "." " "))
 	set -x
 
-	for i in $(seq 0 $(( ${#key_array} - 2 ))); do
-		new_key=""
+	readarray -t key_array < <(echo "$1" | tr "." "\n")
+	# declare -p key_array # debug
+
+	for i in $(seq 0 $(( ${#key_array[@]} - 2 ))); do
+		subkey=""
 
 		for j in $(seq 0 $i); do
-			if [[ -z "$new_key" ]]; then
-				new_key="${key_array[j]}"
+			if [[ -z "$subkey" ]]; then
+				subkey="${key_array[j]}"
 			else
-				new_key="${new_key}.${key_array[j]}"
+				subkey="${subkey}.${key_array[j]}"
 			fi
 		done
 
-		_CONFIG_INDEX[${new_key}]="${key_array[i + 1]}"
-		echo "hey"
+		local index_to_add="${key_array[i + 1]}"
 
+		if ! [[ -v _CONFIG_INDEX[${subkey}] ]]; then
+			_CONFIG_INDEX[${subkey}]="$index_to_add"
+		elif ! is_in_array "$index_to_add" "${_CONFIG_INDEX[${subkey}]}"; then
+			_CONFIG_INDEX[${subkey}]="${_CONFIG_INDEX[${subkey}]} $index_to_add"
+		fi
 	done
 	set +x
 
 }
 
+# debug function
+print_config() {
+	# for key in "${!_CONFIG[@]}"; do
+	# 	echo "config[$key] = ${_CONFIG[$key]}"
+	# done
+
+	for key in "${!_CONFIG_INDEX[@]}"; do
+		echo "config_index[$key] = ${_CONFIG_INDEX[$key]}"
+	done
+}

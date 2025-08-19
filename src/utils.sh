@@ -72,7 +72,7 @@ check_privileges() {
 is_in_array() {
 	local query="$1"
 	shift
-	local array=("$@")
+	read -r -a array <<< "$@"
 
 	echo "${array[@]}" | grep -qw -- "$query"
 }

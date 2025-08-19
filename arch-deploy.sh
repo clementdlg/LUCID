@@ -55,8 +55,7 @@ main() {
 
 	parse_config
 	
-	declare -p _CONFIG # print
-	declare -p _CONFIG_INDEX # print
+	print_config # debug
 
 	# if is_in_array "--check" "${_ARGS[@]}" || is_in_array "-c" "${_ARGS[@]}"; then
 	# 	exit 0
