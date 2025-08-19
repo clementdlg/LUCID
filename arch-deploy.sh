@@ -7,7 +7,7 @@ readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 source "$_SCRIPT_DIR/src/utils.sh"
-source "$_SCRIPT_DIR/src/config.sh"
+source "$_SCRIPT_DIR/src/config-parse.sh"
 
 # defines the order of execution of the modules
 readonly _PREFIXES=(

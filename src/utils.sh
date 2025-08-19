@@ -74,7 +74,7 @@ is_in_array() {
 	shift
 	local array=("$@")
 
-	echo "${array[@]}" | grep -qw "$query"
+	echo "${array[@]}" | grep -qw -- "$query"
 }
 
 # arg parsing : will be replaced later
