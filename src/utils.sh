@@ -107,3 +107,18 @@ get_config() {
 	log i "Found config file '$_CONFIG_FILE'"
 }
 
+check_required_keys() {
+	if [[ -z "$1" ]]; then 
+		log e "${FUNCNAME} : Missing param #1 : required keys array"
+		return 1
+	fi
+
+	local -n keys="$1"
+
+	for key in "${keys[@]}"; do
+		if ! [[ -v _CONFIG[$key] ]]; then
+			log e "Missing config param '$key'"
+			return 1
+		fi
+	done
+}
