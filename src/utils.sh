@@ -122,3 +122,10 @@ check_required_keys() {
 		fi
 	done
 }
+
+value_formatter() {
+	if [[ -z "$1" ]]; then
+		log e "Missing param #1 : config value"
+	fi
+	echo "$1" | tr ";" " "
+}

@@ -16,7 +16,7 @@ main() {
 	readonly _PREFIXES=(
 		# "disk"
 		"user"
-		# "pkg"
+		"pkg"
 		# "dotfiles"
 		# "pipx"
 		# "flatpak"
@@ -53,6 +53,8 @@ main() {
 
 	parse_config
 	
+	print_config # debug
+
 	if is_in_array "--check" "${_ARGS[@]}" || is_in_array "-c" "${_ARGS[@]}"; then
 		exit 0
 	fi
