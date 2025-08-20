@@ -55,7 +55,7 @@ EOF
 }
 
 silent() {
-	"$@" &>/dev/null
+	"$@" >/dev/null
 }
 
 rootless() {

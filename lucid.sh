@@ -17,6 +17,7 @@ main() {
 		# "disk"
 		"user"
 		"pkg"
+		"git-clone"
 		# "dotfiles"
 		# "pipx"
 		# "flatpak"

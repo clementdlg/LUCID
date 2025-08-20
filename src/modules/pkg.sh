@@ -1,9 +1,6 @@
 pkg_module() {
 	log d "${FUNCNAME} : entering"
 
-	# retrieve config keys
-	# iterate over config keys
-	# install pkgs
 	pkg_groups="${_CONFIG_INDEX[pkg]}"
 
 	for group in ${pkg_groups}; do
