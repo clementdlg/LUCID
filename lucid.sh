@@ -16,15 +16,15 @@ main() {
 	readonly _PREFIXES=(
 		# "disk"
 		"user"
+		# "repo"
 		"pkg"
+		# "systemd"
 		"git-clone"
 		"dotfiles"
 		# "pipx"
 		# "flatpak"
-		# "systemd"
 		# "libvirt"
 		# "fw"
-		# "repos"
 		# "groups"
 	)
 
