@@ -117,7 +117,7 @@ check_required_keys() {
 
 	for key in "${keys[@]}"; do
 		if ! [[ -v _CONFIG[$key] ]]; then
-			log e "Missing config param '$key'"
+			log e "${FUNCNAME} : Missing config param '$key'"
 			return 1
 		fi
 	done

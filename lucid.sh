@@ -18,7 +18,7 @@ main() {
 		"user"
 		"pkg"
 		"git-clone"
-		# "dotfiles"
+		"dotfiles"
 		# "pipx"
 		# "flatpak"
 		# "systemd"

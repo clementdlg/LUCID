@@ -37,7 +37,7 @@ safe_clone_repo() {
 
 	check_required_keys required_keys
 
-	local path="/home/${_LOGIN}/${_CONFIG[$k_path]}"
+	local path="${_CONFIG[$k_path]}"
 	local url="${_CONFIG[$k_url]}"
 
 	if ! check_repo_is_accessible "$url"; then
@@ -59,7 +59,7 @@ safe_clone_repo() {
 	# IDEMPOTENCY CHECKS
 	if check_repo_already_cloned "$path" "$url" "$branch"; then
 		log i "Repo '$repo' already cloned. skipping"
-		continue
+		return
 	fi
 
 	if [[ -d "$path" ]]; then
