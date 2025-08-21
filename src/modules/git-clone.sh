@@ -55,7 +55,7 @@ git-clone_module() {
 		# silent rootless git clone --branch="$branch" "$url" "$path"
 		rootless git clone --branch="$branch" "$url" "$path"
 
-		log i "Cloned branch $branch of $url into $path"
+		log i "Cloned branch $branch of repo '$repo' into $path"
 	done
 
 	# local target="/home/$_LOGIN/.config"
