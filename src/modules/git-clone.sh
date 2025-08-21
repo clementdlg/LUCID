@@ -9,58 +9,69 @@ git-clone_module() {
 	silent command -v git || pkg_installer "git"
 
 	for repo in $repo_list; do
-		# SETUP
-		local k_path="git-clone.${repo}.path"
-		local k_url="git-clone.${repo}.url"
-		local k_branch="git-clone.${repo}.branch"
-		local branch=""
-		local required_keys=(
-			"$k_path"
-			"$k_url"
-		)
-
-		check_required_keys required_keys
-
-		local path="/home/${_LOGIN}/${_CONFIG[$k_path]}"
-		local url="${_CONFIG[$k_url]}"
-
-		if ! check_repo_is_accessible "$url"; then
-			log e "Invalid git repository url for '$repo'"
-			return 1
-		fi
-
-		if [[ -v "_CONFIG[$k_branch]" ]]; then
-			branch="${_CONFIG[$k_branch]}"
-
-			if ! check_if_branch_exists "$url" "$branch"; then
-				log e "Branch '$branch' does not exist for repo '$repo'"
-				return 1
-			fi
-		else
-			branch="$(get_repo_default_branch "$url")"
-		fi
-
-		# IDEMPOTENCY CHECKS
-		if check_repo_already_cloned "$path" "$url" "$branch"; then
-			log i "Repo '$repo' already cloned. skipping"
-			continue
-		fi
-
-		if [[ -d "$path" ]]; then
-			log i "Directory at $path already exist. Performing a backup"
-			rootless mv "$path" "$path.old.$timestamp"
-		fi
-
-		# ACTION
-		# silent rootless git clone --branch="$branch" "$url" "$path"
-		rootless git clone --branch="$branch" "$url" "$path"
-
-		log i "Cloned branch $branch of repo '$repo' into $path"
+		safe_clone_repo "$repo"
 	done
 
 	# local target="/home/$_LOGIN/.config"
 
 	log d "${FUNCNAME} : success"
+}
+
+safe_clone_repo() {
+	if [[ -z "$1" ]]; then
+		log e "Missing param #1 : repo name"
+		return 1
+	fi
+
+	local repo="$1"
+
+	# SETUP
+	local k_path="git-clone.${repo}.path"
+	local k_url="git-clone.${repo}.url"
+	local k_branch="git-clone.${repo}.branch"
+	local branch=""
+	local required_keys=(
+		"$k_path"
+		"$k_url"
+	)
+
+	check_required_keys required_keys
+
+	local path="/home/${_LOGIN}/${_CONFIG[$k_path]}"
+	local url="${_CONFIG[$k_url]}"
+
+	if ! check_repo_is_accessible "$url"; then
+		log e "Invalid git repository url for '$repo'"
+		return 1
+	fi
+
+	if [[ -v "_CONFIG[$k_branch]" ]]; then
+		branch="${_CONFIG[$k_branch]}"
+
+		if ! check_if_branch_exists "$url" "$branch"; then
+			log e "Branch '$branch' does not exist for repo '$repo'"
+			return 1
+		fi
+	else
+		branch="$(get_repo_default_branch "$url")"
+	fi
+
+	# IDEMPOTENCY CHECKS
+	if check_repo_already_cloned "$path" "$url" "$branch"; then
+		log i "Repo '$repo' already cloned. skipping"
+		continue
+	fi
+
+	if [[ -d "$path" ]]; then
+		log i "Directory at $path already exist. Performing a backup"
+		rootless mv "$path" "$path.old.$timestamp"
+	fi
+
+	# ACTION
+	# silent rootless git clone --branch="$branch" "$url" "$path"
+	rootless git clone --branch="$branch" "$url" "$path"
+
+	log i "Cloned branch $branch of repo '$repo' into $path"
 }
 
 check_repo_already_cloned() {
