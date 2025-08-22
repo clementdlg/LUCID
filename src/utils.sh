@@ -116,8 +116,8 @@ check_required_keys() {
 	local -n local_func_keys_array="$1"
 
 	for key in "${local_func_keys_array[@]}"; do
-		if ! [[ -v _CONFIG[$local_func_keys_array] ]]; then
-			log e "${FUNCNAME} : Missing config param '$local_func_keys_array'"
+		if ! [[ -v _CONFIG[$key] ]]; then
+			log e "${FUNCNAME} : Missing config param '$key'"
 			return 1
 		fi
 	done
