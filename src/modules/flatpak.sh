@@ -1,7 +1,7 @@
 flatpak_module() {
 	log d "${FUNCNAME} : entering"
 
-	if ! [[ -v _CONFIG[flatpak.packages]} ]]; then
+	if ! [[ -v _CONFIG[flatpak.packages] ]]; then
 		return
 	fi
 
