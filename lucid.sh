@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 
-set -xeuo pipefail
+set -Eeuo pipefail
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
 readonly _SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+readonly stderr_file="/tmp/lucid_stderr.log"
+
+exit_error() {
+	local func="$1"
+
+	awk '{ print "|" NR "| " $0 }' /tmp/lucid_stderr.log | tail
+
+	log e "Deployement failed during execution of function '${func}'. See stderr at '$stderr_file'"
+}
+
+trap 'exit_error ${FUNCNAME}' ERR
 
 main() {
 	# DECLARATIONS 
@@ -74,4 +85,4 @@ main() {
 	log i "Deployement execution was sucessful"
 }
 
-main
+main 2> "$stderr_file"
