@@ -1,20 +1,26 @@
-# arch-deploy
+# L.U.C.I.D
+**Linux Universal Config-driven Idempotent Deployement**
 
-### APPROACH
-- i wrote many deployement script and they all had the same fundamental issue : they where too specific, repetitive and not modular enough
-- the main issue is that these script where hard to adapt overtime for a student learning new tools everyday
-- the approach for this script is to focus on few but curated features
-- a config file allows the user to leverage these features
-- idempotency is also at the center of the design for this script
-- theoretically, you should be able to change your DE, all the programs and services you use without having to ever touch the script
 
-### FEATURES
-- install packages by groups (eg: desktop_apps, virtualization, audio_stack)
-- install packages from third-party package managers (flatpak, pip, cargo, npm)
-- setup firewall rules
-- install your dotfiles
-- control systemd services
-- handle permissions
-- download your personal repos
+## Description
+- LUCID is a modular deployment engine designed to automate the setup of Linux workstations and servers in a safe, reproducible, and cross-distro manner.
+- Its goal is to transform a fresh installation into a fully configured, production-ready system with a single, repeatable execution.
+- LUCID is configurable : Nothing is hardcoded, the script will only act upon what is inside of the config. You can design the environment you want
+- LUCID is universal : It supports RHEL-based distro, Debian-based distros and Arch based distros
+- LUCID has no dependencies : 100% pure bash, run it on a barebone install. No Python required
+- LUCID is safe : Each module checks system state before acting, ensuring repeated runs do not break or duplicate changes.
+- LUCID is extensible : Every action is handled by specialized modules to create the system you want. You can easily contribute your own module to the project.
 
-### TODO
+## Modules
+- Modules can modify your system to get the desired state. Modules included are :
+    - User management
+    - Native Distro packages installation
+    - Dotfile repository setup
+    - Adding 3rd-party repositories
+    - Flatpak packages installation 
+    - Pipx packages installation 
+    - Cargo packages installation 
+    - NPM packages installation 
+    - Systemd service management
+    - Firewall ports and service management
+    - Libvirt management

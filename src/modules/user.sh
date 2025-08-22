@@ -1,13 +1,12 @@
 # Description : Ensure user exists. Creates it if necessary.
 # Ensure home dir exists, creates one if not.
 user_module() {
-	log d "User module"
+	log d "${FUNCNAME} : entering"
 
-	local -n config="$1"
-	local required_keys=("user_login")
+	local required_keys=("user.login")
 
-	check_required_keys required_keys config
-	_LOGIN="${config["user_login"]}"
+	check_required_keys required_keys
+	_LOGIN="${_CONFIG["user.login"]}"
 
 	if [[ ! "$_LOGIN" =~ ^[a-z_][a-z0-9_-]*$ || "$_LOGIN" == "root" ]]; then
 		log e "Invalid username '$_LOGIN'"
@@ -18,9 +17,9 @@ user_module() {
 	if ! silent getent passwd "$_LOGIN"; then
 		local uid="-1"
 
-		if [[ -v "config[user_id]" \
-			&& -n "${config["user_id"]}" ]]; then
-			uid="${config["user_id"]}"
+		if [[ -v "_CONFIG[user_id]" \
+			&& -n "${_CONFIG["user_id"]}" ]]; then
+			uid="${_CONFIG["user_id"]}"
 		fi
 
 		create_user "$_LOGIN" "$uid"
@@ -30,6 +29,8 @@ user_module() {
 	if [[ ! -d "/home/$_LOGIN" ]]; then
 		create_home_manually "$_LOGIN"
 	fi
+
+	log d "${FUNCNAME} : success"
 }
 
 create_user() {

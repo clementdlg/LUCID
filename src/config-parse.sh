@@ -1,77 +1,109 @@
 # config helper
 parse_config() {
-	local current_line=""
+	local line=""
 	local line_nr=0
 	local has_warning=0
 	seen_keys=()
 
-	while IFS= read -r current_line; do
+	while IFS= read -r line; do
 		line_nr=$(( line_nr + 1 ))
 
-		local trimmed_line="$( echo "$current_line" | xargs)"
+		# SANITIZE
+		local trimmed_line="$(echo "$line" | xargs)"
 
 		# skip comments and blank lines
 		if [[ "$trimmed_line" =~ ^# || -z "$trimmed_line" ]]; then
 			continue;
 		fi
 
-		# check format
-		if ! [[ "$trimmed_line" =~ ^[a-z][a-z_]+\ *=.*$ ]]; then
-			log e "Config l${line_nr}: Invalid key/value pair"
+		# verify nr of k/v delimiter
+		num_delimiter="$(echo "$trimmed_line" | tr -cd "=" | wc -c)"
+		if [[ "$num_delimiter" != "1" ]]; then
+			log e "Config l${line_nr}: Invalid key=value delimiter"
 			return 1
 		fi
 
-		local trimmed_key="$(echo "$trimmed_line" | cut -d= -f1 | xargs)"
-		local trimmed_value="$(echo "$trimmed_line" | cut -d= -f2 | xargs)"
+		local key="$(echo "$trimmed_line" | cut -d= -f1 | xargs)"
+		local value="$(echo "$trimmed_line" | cut -d= -f2 | xargs)"
 
-		# check for duplicate
-		if is_in_array "$trimmed_key" "${seen_keys[@]}"; then
-			log w "Config l${line_nr}: Found duplicate key '$trimmed_key'"
+		# VALIDATE KEY
+		local k_token="[a-z0-9-]+"
+		local k_regex="^${k_token}(\.${k_token}){1,4}$"
+		if ! [[ "$key" =~ $k_regex ]]; then
+			log e "Config l${line_nr}: Invalid key format"
+			return 1
+		fi
+
+		# check for key duplication
+		if is_in_array "$key" "${seen_keys[@]}"; then
+			log w "Config l${line_nr}: Found duplicate key '$key'"
 			has_warning=1
 		else
-			seen_keys+=("$trimmed_key")
+			seen_keys+=("$key")
 		fi
 
-		if [[ "$trimmed_value" == *"::"* || "$trimmed_value" == *":" ]]; then
-			log w "Config l${line_nr}: Extra separator in value"
-			has_warning=1
+		# VALIDATE VALUE
+		if [[ -z "$value" ]]; then
+			log w "Config l${line_nr}: Empty value for '$key', ignoring"
+			continue
 		fi
 
-		_CONFIG["$trimmed_key"]="$trimmed_value"
+		local v_token="[a-zA-Z0-9/_.:-]+"
+		local v_regex="^${v_token}(;${v_token})*$"
+
+		if ! [[ "$value" =~ $v_regex ]]; then
+			log e "Config l${line_nr}: Invalid value format"
+			return 1
+		fi
+		
+		_CONFIG["$key"]="$value"
+		index_config_key "$key"
 
 	done < "$_CONFIG_FILE"
 
-	(( has_warning == 00 )) && log i "Config is valid"
+	if (( has_warning == 00 )); then
+		log i "Config : Valid"
+	else
+		log i "Config : Found warning but proceeding"
+	fi
 }
 
-# config helper
-set_buffer() {
-	local prefix="$1"
+index_config_key() {
+	if [[ -z "$1" ]]; then
+		log e "${FUNCNAME} : Missing param #1 : config key"
+		return 1
+	fi
 
-	# empty buffer
-	for key in "${!buffer[@]}"; do
-		unset "buffer[$key]"
-	done
+	read -r -a key_array <<< "$(echo "$1" | tr "." " ")"
 
-	# keys that match the prefix are sent to the buffer 
-	for key in "${!_CONFIG[@]}"; do
-		if [[ "$key" == "$prefix"* ]]; then
-			buffer["$key"]="${_CONFIG["$key"]}"
-			unset "_CONFIG[$key]"
+	for i in $(seq 0 $(( ${#key_array[@]} - 2 ))); do
+		subkey=""
+
+		for j in $(seq 0 $i); do
+			if [[ -z "$subkey" ]]; then
+				subkey="${key_array[j]}"
+			else
+				subkey="${subkey}.${key_array[j]}"
+			fi
+		done
+
+		local index_to_add="${key_array[i + 1]}"
+
+		if ! [[ -v _CONFIG_INDEX[$subkey] ]]; then
+			_CONFIG_INDEX[$subkey]="$index_to_add"
+		elif ! is_in_array "$index_to_add" "${_CONFIG_INDEX[$subkey]}"; then
+			_CONFIG_INDEX[$subkey]="${_CONFIG_INDEX[$subkey]} $index_to_add"
 		fi
 	done
 }
 
+# debug function
+print_config() {
+	# for key in "${!_CONFIG[@]}"; do
+	# 	echo "config[$key] = ${_CONFIG[$key]}"
+	# done
 
-# config helper
-check_required_keys() {
-	local -n keys_to_check="$1"
-	local -n mod_config="$2"
-
-	for item in "${keys_to_check[@]}"; do
-		if ! [[ -v mod_config["$item"] ]]; then
-			log e "Missing key '$item' from config file"
-			return 1
-		fi
+	for key in "${!_CONFIG_INDEX[@]}"; do
+		echo "config_index[$key] = ${_CONFIG_INDEX[$key]}"
 	done
 }

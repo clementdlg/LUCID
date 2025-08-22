@@ -55,7 +55,7 @@ EOF
 }
 
 silent() {
-	"$@" &>/dev/null
+	"$@" >/dev/null
 }
 
 rootless() {
@@ -72,7 +72,7 @@ check_privileges() {
 is_in_array() {
 	local query="$1"
 	shift
-	local array=("$@")
+	read -r -a array <<< "$@"
 
 	echo "${array[@]}" | grep -qw -- "$query"
 }
@@ -107,3 +107,25 @@ get_config() {
 	log i "Found config file '$_CONFIG_FILE'"
 }
 
+check_required_keys() {
+	if [[ -z "$1" ]]; then 
+		log e "${FUNCNAME} : Missing param #1 : required keys array"
+		return 1
+	fi
+
+	local -n keys="$1"
+
+	for key in "${keys[@]}"; do
+		if ! [[ -v _CONFIG[$key] ]]; then
+			log e "${FUNCNAME} : Missing config param '$key'"
+			return 1
+		fi
+	done
+}
+
+value_formatter() {
+	if [[ -z "$1" ]]; then
+		log e "Missing param #1 : config value"
+	fi
+	echo "$1" | tr ";" " "
+}

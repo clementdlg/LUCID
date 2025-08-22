@@ -1,16 +1,14 @@
 pkg_module() {
-	log d "pkg module"
-	local -n config="$1"
+	log d "${FUNCNAME} : entering"
 
-	for pkg_group in "${!config[@]}"; do
-		local pkg_names="$(echo "${config["$pkg_group"]}" | tr ":" " ")"
+	pkg_groups="${_CONFIG_INDEX[pkg]}"
 
-		if [[ -z "$pkg_names" ]]; then
-			continue
-		fi
-
-		pkg_installer "$pkg_names"
+	for group in ${pkg_groups}; do
+		local group_fmt="$(value_formatter "${_CONFIG[pkg.${group}]}")"
+		pkg_installer "$group_fmt"
 	done
+
+	log d "${FUNCNAME} : success"
 }
 
 pkg_installer() {
