@@ -25,7 +25,7 @@ main() {
 		# "flatpak"
 		# "libvirt"
 		# "fw"
-		# "groups"
+		"groups"
 	)
 
 	# INCLUDES

@@ -3,15 +3,9 @@
 # Does not create any groups, as this module is intended for system groups. 
 # Must run at the end of the script to ensure service groups are created by their respective packages
 groups_module() {
-	log d "groups module"
-	set -x
-	local -n config="$1"
+	log d "${FUNCNAME} : entering"
 
-	if [[ ! -v config["groups"] || -z "${config["groups"]}" ]]; then
-		return
-	fi
-
-	local groups_str="$(echo "${config["groups"]}" | tr ":" " ")"
+	local groups_str="$(echo "${_CONFIG["groups.system"]}" | tr ";" " ")"
 
 	local groups_changed=0
 
@@ -33,6 +27,7 @@ groups_module() {
 		log i "User $_LOGIN was already member of all valid requested groups"
 	fi
 
+	log d "${FUNCNAME} : success"
 }
 
 check_user_in_group() {

@@ -29,7 +29,7 @@ parse_config() {
 		# VALIDATE KEY
 		local k_token="[a-z0-9-]+"
 		local k_regex="^${k_token}(\.${k_token}){1,4}$"
-		if ! [[ "$key" =~ $k_token ]]; then
+		if ! [[ "$key" =~ $k_regex ]]; then
 			log e "Config l${line_nr}: Invalid key format"
 			return 1
 		fi
