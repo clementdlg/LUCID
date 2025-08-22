@@ -100,18 +100,20 @@ add_copr_repo() {
 		local user="${_CONFIG[$k_user]}"
 		local project="${_CONFIG[$k_project]}"
 
-		if ! dnf copr list | grep -qw "copr.fedorainfracloud.org/$user/$project"; then
-			local copr_url="https://copr.fedorainfracloud.org/api_3/project/?ownername=${user}&projectname=${project}"
-
-			code="$(curl -s -o /dev/null -X 'GET' -w "%{http_code}" "$copr_url")"
-			if (( code != 200 )); then
-				log e "Invalid corp repo '$repo_name'"
-				return 1
-			fi
-
-			dnf copr enable "$user/$project" -y 1>&2
-			log i "Copr repo added : $user/$project"
+		if dnf copr list | grep -qw "copr.fedorainfracloud.org/$user/$project"; then
+			continue
 		fi
+
+		local copr_url="https://copr.fedorainfracloud.org/api_3/project/?ownername=${user}&projectname=${project}"
+
+		code="$(curl -s -o /dev/null -X 'GET' -w "%{http_code}" "$copr_url")"
+		if (( code != 200 )); then
+			log e "Invalid corp repo '$repo_name'"
+			return 1
+		fi
+
+		dnf copr enable "$user/$project" -y 1>&2
+		log i "Copr repo added : $user/$project"
 	done
 
 	log d "${FUNCNAME} : success"
