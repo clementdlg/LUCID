@@ -8,7 +8,7 @@ flatpak_module() {
 	silent command -v flatpak || pkg_installer flatpak
 
 	flathub_url="https://dl.flathub.org/repo/flathub.flatpakrepo"
-	flatpak remote-add --if-not-exists flathub 
+	flatpak remote-add --if-not-exists flathub "$flathub_url"
 
 	flatpak_list="$(echo "${_CONFIG[flatpak.packages]}" | tr ";" " ")"
 
