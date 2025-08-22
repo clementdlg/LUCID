@@ -15,7 +15,7 @@ main() {
 	# defines the order of execution of the modules
 	readonly _PREFIXES=(
 		"user"
-		# "repo"
+		"repo"
 		"pkg"
 		# "systemd"
 		"git-clone"

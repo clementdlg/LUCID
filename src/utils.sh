@@ -113,11 +113,11 @@ check_required_keys() {
 		return 1
 	fi
 
-	local -n keys="$1"
+	local -n local_func_keys_array="$1"
 
-	for key in "${keys[@]}"; do
-		if ! [[ -v _CONFIG[$key] ]]; then
-			log e "${FUNCNAME} : Missing config param '$key'"
+	for key in "${local_func_keys_array[@]}"; do
+		if ! [[ -v _CONFIG[$local_func_keys_array] ]]; then
+			log e "${FUNCNAME} : Missing config param '$local_func_keys_array'"
 			return 1
 		fi
 	done
