@@ -1,6 +1,10 @@
 flatpak_module() {
 	log d "${FUNCNAME} : entering"
 
+	if ! [[ -v _CONFIG[flatpak.packages]} ]]; then
+		return
+	fi
+
 	silent command -v flatpak || pkg_installer flatpak
 
 	flathub_url="https://dl.flathub.org/repo/flathub.flatpakrepo"
