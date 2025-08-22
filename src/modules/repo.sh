@@ -6,7 +6,7 @@ repo_module() {
 	read -r -a distro_array <<< "$distro"
 
 	if [[ "${#distro_array[@]}" != "1" ]]; then
-		log e "Cannot add package repo from several distros"
+		log e "Cannot add package repo from several distros '$distro'"
 		return 1
 	fi
 

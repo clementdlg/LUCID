@@ -1,9 +1,8 @@
 flatpak_module() {
 	log d "${FUNCNAME} : entering"
 
-	if ! [[ -v _CONFIG[flatpak.packages] ]]; then
-		return
-	fi
+	keys=("flatpak.packages")
+	check_required_keys keys
 
 	silent command -v flatpak || pkg_installer flatpak
 
@@ -13,7 +12,10 @@ flatpak_module() {
 	flatpak_list="$(echo "${_CONFIG[flatpak.packages]}" | tr ";" " ")"
 
 	log i "Installing flatpaks : $flatpak_list"
-	flatpak install -y --noninteractive ${flatpak_list}
+	if ! flatpak install -y --noninteractive ${flatpak_list}; then
+		log e "${FUNCNAME} : Invalid package name among list"
+		return 1
+	fi
 
 	log d "${FUNCNAME} : success"
 }

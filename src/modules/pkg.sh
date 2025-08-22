@@ -23,7 +23,7 @@ pkg_installer() {
 		get_pkg_install_cmd
 	fi
 
-	log i "Installing package(s) : $pkg_names"
+	log i "Trying to install package(s) : $pkg_names"
 	$_PKG_INSTALL $pkg_names 1>&2
 
 }
