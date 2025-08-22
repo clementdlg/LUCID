@@ -14,7 +14,6 @@ main() {
 
 	# defines the order of execution of the modules
 	readonly _PREFIXES=(
-		# "disk"
 		"user"
 		# "repo"
 		"pkg"
@@ -22,7 +21,7 @@ main() {
 		"git-clone"
 		"dotfiles"
 		# "pipx"
-		# "flatpak"
+		"flatpak"
 		# "libvirt"
 		# "fw"
 		"groups"
@@ -71,6 +70,8 @@ main() {
 			exit 1
 		fi
 	done
+
+	log i "Deployement execution was sucessful"
 }
 
 main
