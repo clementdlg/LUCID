@@ -4,6 +4,11 @@ git-clone_module() {
 	log d "${FUNCNAME} : entering"
 
 	local repo_list="${_CONFIG_INDEX[git-clone]}"
+
+	if [[ -z "$repo_list" ]]; then
+		return 0
+	fi
+
 	local timestamp="$(date +%y-%m-%d-%H-%M-%S)"
 
 	silent command -v git || pkg_installer "git"

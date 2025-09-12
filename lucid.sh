@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -xEeuo pipefail
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 readonly _ARGS=("$@")
@@ -10,9 +10,9 @@ readonly stderr_file="/tmp/lucid_stderr.log"
 exit_error() {
 	local func="$1"
 
-	awk '{ print "|" NR "| " $0 }' /tmp/lucid_stderr.log | tail
-
 	log e "Deployement failed during execution of function '${func}'. See stderr at '$stderr_file'"
+
+	awk '{ print "|" NR "| " $0 }' /tmp/lucid_stderr.log | tail
 }
 
 trap 'exit_error ${FUNCNAME}' ERR
@@ -26,9 +26,9 @@ main() {
 	# defines the order of execution of the modules
 	readonly _PREFIXES=(
 		"user"
-		"repo"
+		# "repo"
 		"pkg"
-		# "systemd"
+		"systemd"
 		"git-clone"
 		"dotfiles"
 		# "pipx"
@@ -73,6 +73,10 @@ main() {
 	# execute all modules
 	for prefix in "${_PREFIXES[@]}"; do
 		local function="${prefix}_module"
+
+		if ! [[ -v _CONFIG_INDEX[$prefix] ]]; then
+			continue
+		fi
 
 		if declare -F "$function" >/dev/null; then
 			eval "$function"
