@@ -67,3 +67,5 @@ other_pkgs=(
 )
 
 environment="cosmic-desktop"
+dotfiles="https://github.com/clementdlg/unidots"
+user="krem"

@@ -4,6 +4,17 @@ err() {
 	echo "ERROR : $1" 1>&2
 }
 
+as_user() {
+	su "$user" -c "$1"
+}
+
+check_root() {
+	if [[ "$EUID" != "0" ]]; then
+		err "Run this script as root"
+		exit 1
+	fi
+}
+
 source_cfg() {
 	if [ -f ./config.sh ]; then
 		source ./config.sh
@@ -15,7 +26,7 @@ source_cfg() {
 }
 
 fedora_setup() {
-	sudo dnf install --setopt=install_weak_deps=False -y \
+	dnf install --setopt=install_weak_deps=False -y \
 		${firmware[@]} \
 		${cli[@]} \
 		${network[@]} \
@@ -23,33 +34,41 @@ fedora_setup() {
 		${other_pkgs[@]} \
 		${containers[@]}
 
-	sudo systemctl set-default graphical.target
+	systemctl set-default graphical.target
 }
 
 dotfiles() {
-	rm -rf ~/.config/* ~/.bashrc
-	git clone https://github.com/clementdlg/unidots
-	cd unidots/
-	stow -t ~ common
-	stow -t ~/.config "$environement"
+	local repo="$(basename "$dotfiles")"
+	local path="~/.local/share/${repo}"
+
+	as_user "\
+		rm -rf ~/.config/* ~/.bashrc ${path} &&\
+		git clone $dotfiles ${path} &&\
+		cd ${path} &&\
+		stow -t ~ common &&\
+		stow -t ~/.config $environment"
 }
 
 flatpak_setup() {
-	flatpakremote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-	flatpakinstall -y --noninteractive ${flatpaks[@]}
+	flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+	flatpak install flathub -y --noninteractive ${flatpaks[@]}
 }
 
 nix() {
-	curl -fsSL https://install.determinate.systems/nix | sh -s -- install
-	source /etc/profile.d/nix.sh
-	nix shell nixpkgs#home-manager
-	home-manager switch
+	as_user "\
+		curl -fsSL https://install.determinate.systems/nix | sh -s -- install && \
+		source /etc/profile.d/nix.sh && \
+		nix shell nixpkgs#home-manager && \
+		home-manager switch"
 }
 
 main() {
+	check_root
 	source_cfg
 	fedora_setup
 	dotfiles
 	flatpak_setup
 	nix
 }
+
+time main "$@"
