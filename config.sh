@@ -56,8 +56,8 @@ flatpaks=(
 	"org.qbittorrent.qBittorrent"
 	"org.remmina.Remmina"
 	"org.filezillaproject.Filezilla"
-	"org.onlyoffice.desktopeditor"
-	"org.prismlauncher.PrismLaunch"
+	"org.onlyoffice.desktopeditors"
+	"org.prismlauncher.PrismLauncher"
 )
 
 other_pkgs=(

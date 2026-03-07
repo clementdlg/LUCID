@@ -55,11 +55,10 @@ flatpak_setup() {
 }
 
 nix() {
-	as_user "\
-		curl -fsSL https://install.determinate.systems/nix | sh -s -- install && \
-		source /etc/profile.d/nix.sh && \
-		nix shell nixpkgs#home-manager && \
-		home-manager switch"
+	curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+
+	as_user "source /etc/profile.d/nix.sh && \
+		nix run nixpkgs#home-manager -- init --switch"
 }
 
 main() {
